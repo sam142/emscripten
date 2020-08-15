@@ -7568,9 +7568,9 @@ Module['onRuntimeInitialized'] = function() {
     create_test_file('lib.js', '''
       mergeInto(LibraryManager.library, {
         check_memprof_requirements: function() {
-          if (typeof STACK_BASE === 'number' &&
-              typeof STACK_MAX === 'number' &&
-              typeof STACKTOP === 'number' &&
+          if (typeof _emscripten_stack_get_base === 'function' &&
+              typeof _emscripten_stack_get_end === 'function' &&
+              typeof _emscripten_stack_get_current === 'function' &&
               typeof Module['___heap_base'] === 'number') {
              out('able to run memprof');
            } else {
