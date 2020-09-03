@@ -5479,12 +5479,12 @@ int main(int argc, char** argv) {
         return 0;
       }
       ''')
-    self.run_process([EMCC, '-o', 'libside.wasm', 'side.cpp', '-s', 'SIDE_MODULE=1', '-fexceptions'])
+    self.run_process([EMCC, '-g', '-O2', '-o', 'libside.wasm', 'side.cpp', '-s', 'SIDE_MODULE=1', '-fexceptions'])
 
     def build_main(args):
       print(args)
       with env_modify({'EMCC_FORCE_STDLIBS': 'libc++abi'}):
-        self.run_process([EMCC, 'main.cpp', '-s', 'MAIN_MODULE=1',
+        self.run_process([EMCC, 'main.cpp', '-g', '-O2', '-s', 'ASSERTIONS', '-s', 'MAIN_MODULE=1',
                           '--embed-file', 'libside.wasm'] + args)
 
     build_main([])
@@ -6705,7 +6705,7 @@ int main() {
     # we don't metadce with linkable code! other modules may want stuff
     # TODO(sbc): Investivate why the number of exports is order of magnitude
     # larger for wasm backend.
-    'main_module_2': (['-O3', '-s', 'MAIN_MODULE=2'], [], [],  10309), # noqa
+    'main_module_2': (['-O3', '-s', 'MAIN_MODULE=2'], [], [],  10297), # noqa
   })
   def test_metadce_hello(self, *args):
     self.run_metadce_test('hello_world.cpp', *args)

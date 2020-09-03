@@ -23,6 +23,12 @@ Current Trunk
 - dlopen, in conformace with the spec, now checks that one of either RTDL_LAZY
   or RTDL_NOW flags ar set.  Previously, it was possible set nether of these
   without generating an error.
+- The ABI used symbol imports/export in dynamic linking (MAIN_MODULE +
+  SIDE_MODULE) is not that same as the ABI used by llvm and wasm-ld.  That
+  is symbol addresses are imports from the 'GOT.mem' and 'GOT.func'
+  pseudo modules.  As one side effect of this change it is now required that
+  JavaScript functions that are imported by address are now required to have
+  a `__sig` specified in the library JavaScript file.
 
 2.0.8: 10/24/2020
 -----------------
