@@ -194,6 +194,17 @@ WebAssembly.instantiate(Module['wasm'], imports).then(function(output) {
   /*** ASM_MODULE_EXPORTS ***/
 #endif
   wasmTable = asm['__indirect_function_table'];
+  wasmMemory = asm['memory'];
+  buffer = wasmMemory.buffer;
+  updateGlobalBufferAndViews(buffer);
+#if ASSERTIONS
+  assert(wasmTable);
+  assert(wasmMemory);
+  assert(buffer.byteLength === {{{ INITIAL_MEMORY }}});
+#if USE_PTHREADS
+  assert(buffer instanceof SharedArrayBuffer, 'requested a shared WebAssembly.Memory but the returned buffer is not a SharedArrayBuffer, indicating that while the browser has SharedArrayBuffer it does not have WebAssembly threads support - you may need to set a flag');
+#endif
+#endif
 
   initRuntime(asm);
 #if USE_PTHREADS && PTHREAD_POOL_SIZE

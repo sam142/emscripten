@@ -195,3 +195,9 @@ var STRUCT_INFO = '';
 
 // If true, building against Emscripten's asm.js/wasm heap memory profiler.
 var MEMORYPROFILER = 0;
+
+// By default we set this to 0 meaning the wasm file does not defined its own
+// memory and instead the memory is defined in JavaScript.
+// This is set 1 in STANDALONE_WASM or MINIMAL_RUNTIME mode in which case
+// the wasm module exports its memory to JavaScript.
+var MEMORY_DEFINED_IN_WASM = 0;
