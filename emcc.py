@@ -48,6 +48,7 @@ from tools.toolchain_profiler import ToolchainProfiler
 from tools import js_manipulation
 from tools import wasm2c
 from tools import webassembly
+from tools import config
 
 if __name__ == '__main__':
   ToolchainProfiler.record_process_start()
@@ -729,10 +730,10 @@ There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR P
 
   CXX = [shared.CLANG_CXX]
   CC = [shared.CLANG_CC]
-  if shared.COMPILER_WRAPPER:
-    logger.debug('using compiler wrapper: %s', shared.COMPILER_WRAPPER)
-    CXX.insert(0, shared.COMPILER_WRAPPER)
-    CC.insert(0, shared.COMPILER_WRAPPER)
+  if config.COMPILER_WRAPPER:
+    logger.debug('using compiler wrapper: %s', config.COMPILER_WRAPPER)
+    CXX.insert(0, config.COMPILER_WRAPPER)
+    CC.insert(0, config.COMPILER_WRAPPER)
 
   if run_via_emxx:
     clang = shared.CLANG_CXX
@@ -844,7 +845,7 @@ There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR P
     # warnings are properly printed during arg parse.
     newargs = diagnostics.capture_warnings(newargs)
 
-    if not shared.CONFIG_FILE:
+    if not config.config_file:
       diagnostics.warning('deprecated', 'Specifying EM_CONFIG as a python literal is deprecated. Please use a file instead.')
 
     if sys.version_info < (3, 0, 0) and 'EMCC_ALLOW_PYTHON2' not in os.environ:
