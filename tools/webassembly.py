@@ -108,10 +108,7 @@ def add_emscripten_metadata(wasm_file):
     f.write(orig[8:])
 
 
-def add_dylink_section(wasm_file, needed_dynlibs):
-  # A wasm shared library has a special "dylink" section, see tools-conventions repo.
-  # This function adds this section to the beginning on the given file.
-
+def parse_dylink_section(wasm_file):
   wasm = open(wasm_file, 'rb').read()
   section_name = b'\06dylink' # section name, including prefixed size
   file_header = wasm[:8]
@@ -121,6 +118,7 @@ def add_dylink_section(wasm_file, needed_dynlibs):
   assert wasm[offset] == 0
   offset += 1
   size, offset = readLEB(wasm, offset)
+  section_end = offset + size
   section = wasm[offset:offset + size]
   # section name
   assert section.startswith(section_name)
@@ -130,7 +128,17 @@ def add_dylink_section(wasm_file, needed_dynlibs):
   table_size, offset = readLEB(section, offset)
   table_align, offset = readLEB(section, offset)
 
+  rtn = (mem_size, mem_align, table_size, table_align, section_end)
+  print(rtn)
+
+
+def add_dylink_section(wasm_file, needed_dynlibs):
+  # A wasm shared library has a special "dylink" section, see tools-conventions repo.
+  # This function adds this section to the beginning on the given file.
+
   logger.debug('creating wasm dynamic library with mem size %d, table size %d, align %d' % (mem_size, table_size, mem_align))
+
+  mem_size, mem_align, table_size, table_align, section_end = parse_dylink_section(wasm_file)
 
   contents = (toLEB(mem_size) + toLEB(mem_align) +
               toLEB(table_size) + toLEB(0))
@@ -162,6 +170,10 @@ def add_dylink_section(wasm_file, needed_dynlibs):
     contents += toLEB(len(dyn_needed))
     contents += dyn_needed
 
+  orig = open(wasm_file, 'rb').read()
+  file_header = wasm[:8]
+  file_remainder = wasm[section_end:]
+
   section_size = len(section_name) + len(contents)
   with open(wasm_file, 'wb') as f:
     # copy magic number and version
@@ -172,4 +184,4 @@ def add_dylink_section(wasm_file, needed_dynlibs):
     f.write(section_name)
     f.write(contents)
     # copy rest of binary
-    f.write(wasm[8:])
+    f.write(file_remainder)

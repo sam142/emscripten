@@ -23,6 +23,7 @@ from tools import building
 from tools import diagnostics
 from tools import shared
 from tools import gen_struct_info
+from tools import webassembly
 from tools.shared import WINDOWS, asstr, path_from_root, exit_with_error, asmjs_mangle, treat_as_user_function
 from tools.toolchain_profiler import ToolchainProfiler
 
@@ -209,6 +210,9 @@ class Memory():
     self.stack_low = align_memory(shared.Settings.GLOBAL_BASE + self.static_bump)
     self.stack_high = align_memory(self.stack_low + shared.Settings.TOTAL_STACK)
 
+    #  * then dynamic memory begins
+    self.dynamic_base = align_memory(self.stack_high)
+
 
 def apply_memory(js, metadata):
   # Apply the statically-at-compile-time computed memory locations.
@@ -217,6 +221,8 @@ def apply_memory(js, metadata):
   # Write it all out
   js = js.replace('{{{ STACK_BASE }}}', str(memory.stack_high))
   js = js.replace('{{{ STACK_MAX }}}', str(memory.stack_low))
+  if shared.Settings.RELOCATABLE:
+    js = js.replace('{{{ HEAP_BASE }}}', str(memory.dynamic_base))
 
   logger.debug('stack_high: %d, stack_low: %d, static bump: %d', memory.stack_high, memory.stack_low, memory.static_bump)
 
@@ -412,6 +418,13 @@ def emscript(infile, outfile_js, memfile, temp_files, DEBUG):
       global_initializers = 'if (!ENVIRONMENT_IS_PTHREAD) ' + global_initializers
 
     pre += '\n' + global_initializers + '\n'
+
+  if shared.Settings.RELOCATABLE:
+    memsize = webassembly.parse_dylink_section(infile)[0]
+    print(memsize)
+    print(metadata['staticBump'])
+    assert(memsize == metadata['staticBump'])
+    metadata['staticBump'] = memsize
 
   pre = apply_memory(pre, metadata)
   pre = apply_static_code_hooks(pre) # In regular runtime, atinits etc. exist in the preamble part
