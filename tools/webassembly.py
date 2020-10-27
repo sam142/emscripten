@@ -26,7 +26,7 @@ EMSCRIPTEN_METADATA_MAJOR, EMSCRIPTEN_METADATA_MINOR = (0, 3)
 # change, increment EMSCRIPTEN_ABI_MINOR if EMSCRIPTEN_ABI_MAJOR == 0
 # or the ABI change is backwards compatible, otherwise increment
 # EMSCRIPTEN_ABI_MAJOR and set EMSCRIPTEN_ABI_MINOR = 0.
-EMSCRIPTEN_ABI_MAJOR, EMSCRIPTEN_ABI_MINOR = (0, 28)
+EMSCRIPTEN_ABI_MAJOR, EMSCRIPTEN_ABI_MINOR = (0, 29)
 
 
 def toLEB(x):
@@ -62,7 +62,6 @@ def add_emscripten_metadata(wasm_file):
 
   mem_size = shared.Settings.INITIAL_MEMORY // WASM_PAGE_SIZE
   global_base = shared.Settings.GLOBAL_BASE
-  dynamic_base = shared.Settings.LEGACY_DYNAMIC_BASE
 
   logger.debug('creating wasm emscripten metadata section with mem size %d' % mem_size)
   name = b'\x13emscripten_metadata' # section name, including prefixed size
@@ -83,7 +82,7 @@ def add_emscripten_metadata(wasm_file):
     toLEB(mem_size) +
     toLEB(0) +
     toLEB(global_base) +
-    toLEB(dynamic_base) +
+    toLEB(0) +
     # dynamictopPtr, always 0 now
     toLEB(0) +
 
